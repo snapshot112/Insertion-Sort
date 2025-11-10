@@ -1,0 +1,44 @@
+Sorting program requirements:
+- reads zero or more numbers from STDIN
+- reads fully buffered
+- Prints same numbers in STDOUT
+  > Prints 1 number per line
+  > Prints in sorted order
+- Must use linked lists (doubly or singly)
+- Must use a version of insertion sort.
+- Must end output with a newline.
+  
+Number specifics:
+- Non-negative
+- separated by *ANY* whitespace, including newlines
+- (Possibly floats?)
+
+Required flags:
+> Accessible using getopt.
+> Flags are processed in the order they are listed below.
+0. Sort
+1. -d Start printing at high instead of low.
+2. -c Add every successive 2 items together when printing (no successor = just print that number solo)
+3. -o removes all odd numbers from the sorted list
+4. -z split and zip sorted list
+   > Sort first, split sorted list in 2 halves (uneven means the lower numbers go in the bigger half)
+   > Then zip items together, first the lowest number in the half with the lower numbers, then the lowest number in the half with the bigger numbers.
+
+> Check for descending order conflicts and specify its behavior with other flags.
+> -o and -z might have conflicting behavior: First remove then add? or the other way around...
+
+
+--> see grading for required flags
+
+Useful commands:
+- getopt
+- fgets
+- strtol
+- strtok
+
+
+hand in tarball at the end (make tarball)
+
+
+
+

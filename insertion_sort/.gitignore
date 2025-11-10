@@ -1,0 +1,16 @@
+# Transform into whitelist
+*
+
+# Folders
+!*/
+
+# Git files
+!.gitignore
+
+# C files
+!Makefile
+!*.c
+!*.h
+
+# Shell files
+!*.sh
