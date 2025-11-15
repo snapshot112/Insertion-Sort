@@ -104,7 +104,6 @@ int parse_options(struct config *cfg, int argc, char *argv[]) {
  */
 int parse_input(struct list *list) {
     if (list == NULL) {
-        printf("List is NULL\n");
         return -1;
     }
 
@@ -114,41 +113,31 @@ int parse_input(struct list *list) {
     for (int c = getchar(); c != EOF; c = getchar()) {
         if ('0' <= c && c <= '9') {
             if (number_size > 5) {
-                printf("This number doesn't fit inside an int\n");
                 // Integer can store a max of 5 decimal numbers.
                 return -1;
             }
 
-            printf("Parsing number %c, adding to %d gives ", c, current_number);
-
             current_number = current_number * 10 + (c - '0');
-
-            printf("%d\n", current_number);
 
             number_size++;
         } else if (c == ' ' || c == '\n') {
-            printf("Adding a node with the value %d\n", current_number);
             struct node *new_node = list_new_node(current_number);
 
             if (new_node == NULL) {
-                printf("Failed to create a new node with value %d\n", current_number);
                 return -1;
             }
 
             if (list_add_back(list, new_node) != 0) {
-                printf("Failed to add node to list\n");
                 return -1;
             }
             current_number = 0;
             number_size = 0;
         } else {
-            printf("Unexpected character: %c\n", c);
             return -1;
         }
     }
 
     if (number_size > 5) {
-        printf("This number doesn't fit inside an int (after for loop)\n");
         // Integer can store a max of 5 decimal numbers.
         return -1;
     }
@@ -158,7 +147,6 @@ int parse_input(struct list *list) {
     }
 
     if (list_add_back(list, list_new_node(current_number)) != 0) {
-        printf("Failed to add node to list (after for loop)\n");
         return -1;
     }
 
@@ -173,7 +161,8 @@ int parse_input(struct list *list) {
  * node: The node you want to sort.
  *
  * Returns:
- * 0 on success.
+ * 1 if the node was already sorted.
+ * 0 if the node needed to be moved.
  * -1 on failure.
  *
  * Side Effects:
@@ -184,18 +173,19 @@ static int sort_node(struct list *list, struct node *node) {
         return -1;
     }
 
-    int value = list_node_get_value(node);
+    const int value = list_node_get_value(node);
     struct node *prev = list_prev(list, node);
+
 
     // If the node is already on the right spot.
     if (prev == NULL || list_node_get_value(prev) <= value) {
-        return 0;
+        return 1;
     }
 
     // Else, unlink and find the right spot
     list_unlink_node(list, node);
 
-    while (prev != NULL && list_node_get_value(prev) < value) {
+    while (prev != NULL && list_node_get_value(prev) > value) {
         prev = list_prev(list, prev);
     }
 
@@ -208,7 +198,7 @@ static int sort_node(struct list *list, struct node *node) {
     }
 
     // Add it back on the sorted spot.
-    if (list_insert_after(list, prev, node) != 0) {
+    if (list_insert_after(list, node, prev) != 0) {
         return -1;
     }
     return 0;
@@ -235,18 +225,22 @@ static int sort_list(struct list *list) {
     struct node *node = list_head(list);
 
     if (node == NULL) {
-        list_cleanup(list);
         return 0;
     }
 
-    while (node != NULL) {
+    for (
         struct node *node_to_sort = list_next(node);
+        node_to_sort != NULL;
+        node_to_sort = list_next(node)
+    ) {
+        const int status = sort_node(list, node_to_sort);
 
-        if (sort_node(list, node_to_sort) != 0) {
-            return 1;
+        if (status == -1) {
+            return -1;
         }
-
-        node = list_next(node);
+        if (status == 1) {
+            node = list_next(node);
+        }
     }
 
     return 0;
@@ -423,7 +417,7 @@ static int split_and_zip_list(struct list *list) {
             return -1;
         }
 
-        if (list_insert_after(list, node, node_to_zip) != 0) {
+        if (list_insert_after(list, node_to_zip, node) != 0) {
             return -1;
         }
 
@@ -478,50 +472,51 @@ int main(int argc, char *argv[]) {
     }
 
     struct list *list = list_init();
+
     if (list == NULL || parse_input(list) != 0) {
         list_cleanup(list);
         return EXIT_FAILURE;
     }
 
-    // // Sort the list.
-    // if (sort_list(list) != 0) {
-    //     list_cleanup(list);
-    //     return EXIT_FAILURE;
-    // }
-    //
-    // // Sorted here, start handling flags.
-    //
-    // if (cfg.descending_order) {
-    //     // Flip the list.
-    //     if (flip_list(list) != 0) {
-    //         list_cleanup(list);
-    //         return EXIT_FAILURE;
-    //     }
-    // }
-    //
-    // if (cfg.combine) {
-    //     if (combine_nodes(list) != 0) {
-    //         list_cleanup(list);
-    //         return EXIT_FAILURE;
-    //     }
-    // }
-    //
-    // if (cfg.remove_odd) {
-    //     if (remove_odd_valued_nodes(list) != 0) {
-    //         list_cleanup(list);
-    //         return EXIT_FAILURE;
-    //     }
-    // }
-    //
-    // if (cfg.zip_alternating) {
-    //     if (split_and_zip_list(list) != 0) {
-    //         list_cleanup(list);
-    //         return EXIT_FAILURE;
-    //     }
-    // }
-    //
-    // // Done with the flags, print the results.
-    // print_list(list);
+    // Sort the list.
+    if (sort_list(list) != 0) {
+        // list_cleanup(list);
+        // return EXIT_FAILURE;
+    }
+
+    // Sorted here, start handling flags.
+
+    if (cfg.descending_order) {
+        // Flip the list.
+        if (flip_list(list) != 0) {
+            list_cleanup(list);
+            return EXIT_FAILURE;
+        }
+    }
+
+    if (cfg.combine) {
+        if (combine_nodes(list) != 0) {
+            list_cleanup(list);
+            return EXIT_FAILURE;
+        }
+    }
+
+    if (cfg.remove_odd) {
+        if (remove_odd_valued_nodes(list) != 0) {
+            list_cleanup(list);
+            return EXIT_FAILURE;
+        }
+    }
+
+    if (cfg.zip_alternating) {
+        if (split_and_zip_list(list) != 0) {
+            list_cleanup(list);
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Done with the flags, print the results.
+    print_list(list);
 
     list_cleanup(list);
 

@@ -217,6 +217,7 @@ int list_node_present(const struct list *l, const struct node *n) {
 
 int list_insert_after(struct list *l, struct node *n, struct node *m) {
     if (l == NULL || n == NULL || m == NULL
+
         || list_node_present(l, m) != 1 || list_node_present(l, n) != 0) {
         return 1;
     }
