@@ -121,6 +121,10 @@ int parse_input(struct list *list) {
 
             number_size++;
         } else if (c == ' ' || c == '\n') {
+            if (number_size == 0) {
+                continue;
+            }
+
             struct node *new_node = list_new_node(current_number);
 
             if (new_node == NULL) {

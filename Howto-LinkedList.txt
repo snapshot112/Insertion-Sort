@@ -1,0 +1,9 @@
+List properties
+- Length
+- Head
+- Tail
+
+Node properties
+- Previous
+- Next
+- value (int)

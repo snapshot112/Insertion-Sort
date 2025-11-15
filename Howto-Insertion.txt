@@ -10,8 +10,8 @@ Sorting program requirements:
   
 Number specifics:
 - Non-negative
-- separated by *ANY* whitespace, including newlines
-- (Possibly floats?)
+- Separated by *ANY* whitespace, including newlines
+- Only integers
 
 Required flags:
 > Accessible using getopt.
