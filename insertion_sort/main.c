@@ -1,5 +1,6 @@
 /*
  * Created by snapshot112 on 13/11/2025
+ *                 ^--- This is me, myself and I.
  *
  * Naam: Jeroen Boxhoorn
  * UvAnetID: 16333969
@@ -31,6 +32,9 @@
  *      (uneven means the lower numbers go in the bigger half)
  *    > Then zip items together, first the lowest number in the half with the lower numbers,
  *      then the lowest number in the half with the bigger numbers.
+ *
+ * If an error is encountered during the number parsing,
+ * an error message will be printed to stderr
  */
 
 #include <getopt.h>
@@ -113,6 +117,9 @@ int parse_input(struct list *list) {
     for (int c = getchar(); c != EOF; c = getchar()) {
         if ('0' <= c && c <= '9') {
             if (number_size > 5) {
+                fprintf(stderr,
+                    "Encountered a number that's too big, The number starts with: %d\n",
+                    current_number);
                 // Integer can store a max of 5 decimal numbers.
                 return -1;
             }
@@ -128,21 +135,29 @@ int parse_input(struct list *list) {
             struct node *new_node = list_new_node(current_number);
 
             if (new_node == NULL) {
+                fprintf(stderr, "Allocating memory for \"%d\" failed\n", current_number);
                 return -1;
             }
 
             if (list_add_back(list, new_node) != 0) {
+                fprintf(stderr,
+                    "Failed to add the number \"%d\" to the list\n",
+                    current_number);
                 return -1;
             }
             current_number = 0;
             number_size = 0;
         } else {
+            fprintf(stderr, "Invalid character: %c\n", c);
             return -1;
         }
     }
 
     if (number_size > 5) {
         // Integer can store a max of 5 decimal numbers.
+        fprintf(stderr,
+            "Encountered a number that's too big, The number starts with: %d\n",
+            current_number);
         return -1;
     }
 
@@ -151,6 +166,7 @@ int parse_input(struct list *list) {
     }
 
     if (list_add_back(list, list_new_node(current_number)) != 0) {
+        fprintf(stderr, "Failed to add the number \"%d\" to the list\n", current_number);
         return -1;
     }
 
@@ -470,6 +486,18 @@ static void print_list(const struct list *list) {
  * - Non-negative
  * - Separated by *ANY* whitespace, including newlines
  * - Only integers
+ *
+ * Supporting 4 flags, applied in the following order:
+ * 0. Sort
+ * 1. -d Start printing at high instead of low.
+ * 2. -c Add every successive 2 items together when printing
+ *    (no successor = just print that number solo)
+ * 3. -o removes all odd numbers from the sorted list
+ * 4. -z split and zip sorted list
+ *    > Sort first, split sorted list in 2 halves
+ *      (uneven means the lower numbers go in the bigger half)
+ *    > Then zip items together, first the lowest number in the half with the lower numbers,
+ *      then the lowest number in the half with the bigger numbers.
  */
 int main(int argc, char *argv[]) {
     struct config cfg;
