@@ -302,7 +302,6 @@ static int flip_list(struct list *list) {
  */
 static int combine_nodes(struct list *list) {
     if (list == NULL) {
-        printf("Got NULL List\n");
         return -1;
     }
 
@@ -312,19 +311,16 @@ static int combine_nodes(struct list *list) {
         struct node *next_node = list_next(node);
 
         if (next_node == NULL) {
-            printf("Done combining\n");
             return 0;
         }
 
         const int new_value = list_node_get_value(node) + list_node_get_value(next_node);
 
         if (list_node_set_value(node, new_value) != 0) {
-            printf("New value %d not able to be set\n", new_value);
             return -1;
         }
 
         if (list_unlink_node(list, next_node) != 0) {
-            printf("Unlinking failed\n");
             return -1;
         }
 
