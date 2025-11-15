@@ -407,7 +407,7 @@ static int split_and_zip_list(struct list *list) {
     }
 
     size_t list_size = list_length(list);
-    struct node *split_after = list_get_ith(list, list_size / 2 + list_size % 2);
+    struct node *split_after = list_get_ith(list, list_size / 2 + list_size % 2 - 1);
 
     struct list *second_list = list_cut_after(list, split_after);
 
